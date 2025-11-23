@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Clock } from 'lucide-react';
 import { Input } from '../common/Input';
-import { NavigateHandler } from '../../types/navigation.types';
 
 interface ForgotPasswordProps {
-  onNavigate: NavigateHandler;
+  onNavigate: (view: string) => void;
 }
 
 export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {

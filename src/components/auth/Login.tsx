@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Clock } from 'lucide-react';
 import { Input } from '../common/Input';
 import { LoginFormData } from '../../types/auth.types';
-import { NavigateHandler } from '../../types/navigation.types';
 
 interface LoginProps {
-  onNavigate: NavigateHandler;
+  onNavigate: (view: string) => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
@@ -50,8 +49,7 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       setTimeout(() => {
         // Aquí redirigirías a tu página principal
         alert('¡Login exitoso! Redirigiendo a la página principal');
-        onNavigate('inventory');
-        setIsLoading(false);
+        // window.location.href = '/dashboard'; // Descomenta cuando tengas el dashboard
       }, 1500);
 
     } catch (error) {
