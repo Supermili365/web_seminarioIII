@@ -44,7 +44,7 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
           correo: buyerData.email,
           contrasena: buyerData.password,
           direccion: buyerData.address,
-          rol: 'comprador'
+          role: 'comprador'
         };
 
         console.log('📤 Registrando comprador:', payload);
@@ -72,20 +72,18 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
         setSuccessMessage('¡Usuario creado con éxito! Redirigiendo al inicio de sesión...');
         
       } else {
-        // VENDEDOR: Registro de tienda con usuario en una sola petición
+        // VENDEDOR: Registro de tienda (crea usuario y tienda automáticamente)
         const payload = {
-          area_responsable: storeData.areaResponsable,
-          direccion: storeData.direccion,
-          telefono: storeData.telefono,
-          usuario: {
-            nombre: storeData.nombreUsuario, // Nombre del dueño/responsable
-            correo: storeData.correo,
-            contrasena: storeData.contrasena,
-            rol: 'tienda'
-          }
+          nombre: storeData.nombreUsuario,          // Nombre del responsable
+          correo: storeData.correo,                 // Email
+          contrasena: storeData.contrasena,         // Contraseña
+          area_responsable: storeData.areaResponsable, // Nombre del negocio
+          direccion: storeData.direccion,           // Dirección
+          telefono: storeData.telefono,            // Teléfono
+          role: 'vendedor'
         };
 
-        console.log('📤 Registrando tienda con usuario:', payload);
+        console.log('📤 Registrando tienda:', payload);
 
         const response = await fetch('http://localhost:8080/api/v1/stores/', {
           method: 'POST',

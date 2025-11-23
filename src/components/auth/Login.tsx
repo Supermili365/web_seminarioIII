@@ -38,6 +38,8 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
 
       const data = await response.json();
       console.log('Login exitoso:', data);
+      console.log('Datos del usuario:', data.data.usuario);
+      console.log('Rol del usuario:', data.data.usuario.rol);
       
       // Guardar el token en localStorage
       if (data.data && data.data.token) {
@@ -47,9 +49,23 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
 
       // Simular un pequeño delay para mostrar el círculo de carga
       setTimeout(() => {
-        // Aquí redirigirías a tu página principal
-        alert('¡Login exitoso! Redirigiendo a la página principal');
-        // window.location.href = '/dashboard'; // Descomenta cuando tengas el dashboard
+        // Redirigir según el rol del usuario
+        const usuario = data.data.usuario;
+        
+        console.log('Redirigiendo usuario con rol:', usuario.rol);
+        
+        // Verificar si es tienda/vendedor
+        if (usuario.rol === 'vendedor') {
+          console.log('Es tienda, redirigiendo a create-product');
+          onNavigate('create-product');
+        } else if (usuario.rol === 'comprador') {
+          console.log('Es comprador, redirigiendo a user-profile');
+          onNavigate('user-profile');
+        } else {
+          // Si no reconoce el rol, ir al perfil de usuario por defecto
+          console.log('Rol no reconocido, redirigiendo a user-profile');
+          onNavigate('user-profile');
+        }
       }, 1500);
 
     } catch (error) {

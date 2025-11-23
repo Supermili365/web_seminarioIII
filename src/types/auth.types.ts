@@ -9,7 +9,7 @@ export interface RegisterFormData {
   email: string;
   password: string;
   address: string;
-  role: 'comprador' | 'vendedor'; // Cambiado a tu modelo
+  role: 'comprador' | 'vendedor'; 
 }
 
 export interface StoreFormData {
@@ -19,7 +19,7 @@ export interface StoreFormData {
   phone: string;
   email: string;
   password: string;
-  role: 'vendedor'; // Siempre es 'vendedor' para tiendas
+  role: 'vendedor'; 
 }
 
 export interface ResetPasswordFormData {
