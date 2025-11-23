@@ -1,16 +1,21 @@
-:root {
-  --bg-page: #f3f4f6;          /* fondo gris del app */
-  --bg-content: #f9fafb;       /* fondo blanco-grisáceo del área principal */
-  --bg-input: #f9fafb;
+:root { 
+  --bg-page: #ffffff;          /* fondo verdoso suave de toda la app */
+  --bg-content: #ffffff;     /* mismo color para que no se vea la card separada */
+  --bg-input: #ffffff;
+
   --primary: #22c55e;
   --primary-soft: #bbf7d0;
+
   --text-main: #111827;
   --text-muted: #6b7280;
-  --border-soft: #e5e7eb;
-  --border-upload: #e5e7eb;
+
+  --border-soft: #e1e7e2;
+  --border-upload: #d1e3cf;
   --error: #ef4444;
-  --radius-lg: 12px;
+
+  --radius-lg: 14px;
   --radius-md: 10px;
+
   --font: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
     sans-serif;
 }
@@ -25,21 +30,30 @@
   font-family: var(--font);
 }
 
-/* La “card” ahora es toda la franja blanca de la app */
+/* Ya no es una card flotante: ocupa todo el ancho, sin sombra ni borde */
+
 .publication-card {
   width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
   background-color: var(--bg-content);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* ===== HEADER SUPERIOR: LOGO + ICONOS ===== */
+/* Barra que se “siente” extendida, con contenido centrado */
 
 .publication-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 72px;                 /* 👈 mismo padding que contenido */
-  background-color: #ffffff;
+  max-width: 960px;             /* ancho de contenido */
+  margin: 0 auto;
+  padding: 16px 40px 10px;      /* padding similar al diseño */
   border-bottom: 1px solid var(--border-soft);
+  background-color: transparent; /* mismo fondo que la página */
 }
 
 .app-logo {
@@ -77,8 +91,8 @@
   border-radius: 999px;
   border: none;
   background-color: #f3f4f6;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,11 +114,13 @@
 }
 
 /* ===== TÍTULO + GRID PRINCIPAL ===== */
+/* Contenido centrado con el mismo ancho que el header */
 
 .publication-title {
-  margin: 0;
-  padding: 24px 72px 20px;            /* 👈 mismo margen que en Figma */
-  font-size: 28px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 40px 20px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--text-main);
 }
@@ -112,11 +128,12 @@
 /* Grid de 2 columnas: formulario izq + panel fotos der */
 
 .publication-grid {
-  padding: 0 72px 32px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 40px 40px;
   display: grid;
-  /* antes: 1.8fr / 1.2fr */
-  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
-  gap: 24px 40px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr);
+  gap: 32px 32px;
   align-items: flex-start;
 }
 
@@ -125,27 +142,35 @@
 .publication-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;              /* más espacio vertical entre bloques */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  /* antes: gap: 6px; */
+  gap: 10px;              /* separa un poco más label / input */
 }
 
 .form-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  /* antes: gap: 18px; */
+  gap: 26px;              /* más espacio horizontal entre columnas */
 }
+
+.form-actions {
+  margin-top: 32px;
+  padding-top: 22px;
+}
+
 
 .form-label {
   font-size: 13px;
   color: var(--text-main);
 }
 
-/* Inputs, textarea y select: estilo flat */
+/* Inputs, textarea y select: estilo flat y tamaño similar al diseño */
 
 .input,
 .textarea,
@@ -153,7 +178,7 @@
   width: 100%;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-soft);
-  padding: 12px 14px;              /* 👈 un poco más altos y anchos */
+  padding: 12px 14px;
   font-size: 14px;
   background-color: var(--bg-input);
   color: var(--text-main);
@@ -164,6 +189,7 @@
   appearance: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease,
     background-color 0.15s ease;
+  margin-top: 2px;        /* pequeñísimo respiro bajo el label */
 }
 
 /* Placeholders suaves */
@@ -179,8 +205,8 @@
 .input:focus,
 .textarea:focus,
 .select:focus {
-  border-color: #d1d5db;
-  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.35);
+  border-color: #c1d5c4;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25);
   background-color: #ffffff;
 }
 
@@ -188,10 +214,10 @@
 
 .textarea {
   resize: vertical;
-  min-height: 96px;
+  min-height: 110px;
 }
 
-/* Quitar flechas en number (para que se parezca al diseño) */
+/* Quitar flechas en number */
 
 input[type="number"].input::-webkit-inner-spin-button,
 input[type="number"].input::-webkit-outer-spin-button {
@@ -203,7 +229,7 @@ input[type="number"].input {
   -moz-appearance: textfield;
 }
 
-/* Flecha del select similar a Figma */
+/* Flecha del select */
 
 .select {
   background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
@@ -252,12 +278,12 @@ input[type="number"].input {
 
 .upload-card {
   width: 100%;
-  border-radius: var(--radius-lg);
+  border-radius: 14px;
   border: 2px dashed var(--border-upload);
-  background-color: #f9fafb;
-  padding: 40px 24px;
+  background-color: #f7fff8;   /* fondo verde muy claro */
+  padding: 40px 28px;
   text-align: center;
-  min-height: 320px;
+  min-height: 270px;
 }
 
 .upload-title {
@@ -270,37 +296,34 @@ input[type="number"].input {
 .upload-text {
   font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .upload-button {
   border-radius: 999px;
-  border: 1px solid #d1d5db;
-  padding: 9px 18px;
+  border: none;
+  padding: 11px 22px;
   font-size: 14px;
-  font-weight: 500;
-  background-color: #ffffff;
-  color: var(--text-main);
+  font-weight: 600;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
 }
 
 .upload-button:hover {
-  background-color: #f3f4f6;
+  filter: brightness(0.97);
 }
 
 /* ===== BOTONES INFERIORES ===== */
 
 .form-actions {
-  margin-top: 24px;                /* más espacio respecto al último campo */
+  margin-top: 26px;
   padding-top: 20px;
   border-top: 1px solid var(--border-soft);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  max-width: 520px;                /* 👈 ancho del bloque de botones */
-  margin-left: auto;               /* los alinea con el borde derecho del form */
-  margin-right: 0;
 }
 
 .btn {
@@ -327,7 +350,8 @@ input[type="number"].input {
 .btn-primary {
   background-color: var(--primary);
   color: #ffffff;
-  border-color: var(--primary);
+  border-color: #16a34a;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
 }
 
 .btn-primary:hover {
@@ -338,14 +362,17 @@ input[type="number"].input {
 
 @media (max-width: 900px) {
   .publication-header {
-    padding: 12px 16px;
+    max-width: 100%;
+    padding: 12px 16px 8px;
   }
 
   .publication-title {
+    max-width: 100%;
     padding: 20px 16px 16px;
   }
 
   .publication-grid {
+    max-width: 100%;
     padding: 0 16px 24px;
     grid-template-columns: 1fr;
   }
