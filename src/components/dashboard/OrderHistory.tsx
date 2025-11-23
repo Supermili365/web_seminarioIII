@@ -232,3 +232,5 @@ export const OrderHistory: React.FC<OrderHistoryProps> = ({ onNavigate }) => {
     </div>
   );
 };
+
+export default OrderHistory;

@@ -400,3 +400,5 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({ onNavi
     </div>
   );
 };
+
+export default InventoryManagement;
