@@ -49,7 +49,8 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       setTimeout(() => {
         // Aquí redirigirías a tu página principal
         alert('¡Login exitoso! Redirigiendo a la página principal');
-        // window.location.href = '/dashboard'; // Descomenta cuando tengas el dashboard
+        onNavigate('inventory');
+        setIsLoading(false);
       }, 1500);
 
     } catch (error) {
