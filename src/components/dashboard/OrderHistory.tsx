@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { CheckCircle, Clock, ClipboardList } from 'lucide-react';
-import { View } from '../../types/navigation.types';
+import { NavigateHandler } from '../../types/navigation.types';
 
 type OrderStatus = 'En preparación' | 'Listo para recoger' | 'Entregado';
 
@@ -15,7 +15,7 @@ interface Order {
 }
 
 interface OrderHistoryProps {
-  onNavigate: (view: View) => void;
+  onNavigate: NavigateHandler;
 }
 
 export const OrderHistory: React.FC<OrderHistoryProps> = ({ onNavigate }) => {

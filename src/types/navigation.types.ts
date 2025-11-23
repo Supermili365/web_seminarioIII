@@ -5,3 +5,5 @@ export type View =
   | 'reset-password'
   | 'inventory'
   | 'orders';
+
+export type NavigateHandler = (view: View) => void;

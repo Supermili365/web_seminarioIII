@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Plus, Search, AlertTriangle } from 'lucide-react';
-import { View } from '../../types/navigation.types';
+import { NavigateHandler } from '../../types/navigation.types';
 
 interface InventoryItem {
   id: number;
@@ -15,7 +15,7 @@ interface InventoryItem {
 }
 
 interface InventoryManagementProps {
-  onNavigate: (view: View) => void;
+  onNavigate: NavigateHandler;
 }
 
 export const InventoryManagement: React.FC<InventoryManagementProps> = ({ onNavigate }) => {

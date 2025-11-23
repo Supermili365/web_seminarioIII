@@ -5,12 +5,12 @@ import { ForgotPassword } from './components/auth/ForgotPassword';
 import { ResetPassword } from './components/auth/ResetPassword';
 import { InventoryManagement } from './components/dashboard/InventoryManagement';
 import { OrderHistory } from './components/dashboard/OrderHistory';
-import { View } from './types/navigation.types';
+import { NavigateHandler, View } from './types/navigation.types';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('login');
 
-  const handleNavigate = (view: View) => setCurrentView(view);
+  const handleNavigate: NavigateHandler = (view) => setCurrentView(view);
 
   const renderView = () => {
     switch (currentView) {

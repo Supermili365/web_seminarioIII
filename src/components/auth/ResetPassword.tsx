@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { Input } from '../common/Input';
 import { ResetPasswordFormData } from '../../types/auth.types';
-import { View } from '../../types/navigation.types';
+import { NavigateHandler } from '../../types/navigation.types';
 
 interface ResetPasswordProps {
-  onNavigate: (view: View) => void;
+  onNavigate: NavigateHandler;
 }
 
 export const ResetPassword: React.FC<ResetPasswordProps> = ({ onNavigate }) => {
