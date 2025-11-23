@@ -1,0 +1,383 @@
+:root { 
+  --bg-page: #ffffff;          /* fondo verdoso suave de toda la app */
+  --bg-content: #ffffff;     /* mismo color para que no se vea la card separada */
+  --bg-input: #ffffff;
+
+  --primary: #22c55e;
+  --primary-soft: #bbf7d0;
+
+  --text-main: #111827;
+  --text-muted: #6b7280;
+
+  --border-soft: #e1e7e2;
+  --border-upload: #d1e3cf;
+  --error: #ef4444;
+
+  --radius-lg: 14px;
+  --radius-md: 10px;
+
+  --font: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+    sans-serif;
+}
+
+/* ===== LAYOUT GENERAL (PANTALLA COMPLETA) ===== */
+
+.publication-page {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  font-family: var(--font);
+}
+
+/* Ya no es una card flotante: ocupa todo el ancho, sin sombra ni borde */
+
+.publication-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-content);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ===== HEADER SUPERIOR: LOGO + ICONOS ===== */
+/* Barra que se “siente” extendida, con contenido centrado */
+
+.publication-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 960px;             /* ancho de contenido */
+  margin: 0 auto;
+  padding: 16px 40px 10px;      /* padding similar al diseño */
+  border-bottom: 1px solid var(--border-soft);
+  background-color: transparent; /* mismo fondo que la página */
+}
+
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.app-logo-text {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button {
+  border-radius: 999px;
+  border: none;
+  background-color: #f3f4f6;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #facc15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+/* ===== TÍTULO + GRID PRINCIPAL ===== */
+/* Contenido centrado con el mismo ancho que el header */
+
+.publication-title {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 40px 20px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Grid de 2 columnas: formulario izq + panel fotos der */
+
+.publication-grid {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 40px 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr);
+  gap: 32px 32px;
+  align-items: flex-start;
+}
+
+/* ===== FORMULARIO IZQUIERDO ===== */
+
+.publication-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;              /* más espacio vertical entre bloques */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  /* antes: gap: 6px; */
+  gap: 10px;              /* separa un poco más label / input */
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* antes: gap: 18px; */
+  gap: 26px;              /* más espacio horizontal entre columnas */
+}
+
+.form-actions {
+  margin-top: 32px;
+  padding-top: 22px;
+}
+
+
+.form-label {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+/* Inputs, textarea y select: estilo flat y tamaño similar al diseño */
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  padding: 12px 14px;
+  font-size: 14px;
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+  margin-top: 2px;        /* pequeñísimo respiro bajo el label */
+}
+
+/* Placeholders suaves */
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.9;
+}
+
+/* Foco */
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: #c1d5c4;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25);
+  background-color: #ffffff;
+}
+
+/* Textarea */
+
+.textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+/* Quitar flechas en number */
+
+input[type="number"].input::-webkit-inner-spin-button,
+input[type="number"].input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].input {
+  -moz-appearance: textfield;
+}
+
+/* Flecha del select */
+
+.select {
+  background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(50% - 3px),
+    calc(100% - 11px) calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Checkbox */
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-label {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+/* Errores */
+
+.error-text {
+  font-size: 12px;
+  color: var(--error);
+}
+
+.has-error .input {
+  border-color: var(--error);
+}
+
+/* ===== PANEL DE SUBIR FOTOGRAFÍAS (DERECHA) ===== */
+
+.upload-panel {
+  display: flex;
+  align-items: stretch;
+}
+
+.upload-card {
+  width: 100%;
+  border-radius: 14px;
+  border: 2px dashed var(--border-upload);
+  background-color: #f7fff8;   /* fondo verde muy claro */
+  padding: 40px 28px;
+  text-align: center;
+  min-height: 270px;
+}
+
+.upload-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.upload-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.upload-button {
+  border-radius: 999px;
+  border: none;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
+}
+
+.upload-button:hover {
+  filter: brightness(0.97);
+}
+
+/* ===== BOTONES INFERIORES ===== */
+
+.form-actions {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn {
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: var(--text-main);
+  border-color: #d1d5db;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: #16a34a;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
+}
+
+.btn-primary:hover {
+  filter: brightness(0.97);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 900px) {
+  .publication-header {
+    max-width: 100%;
+    padding: 12px 16px 8px;
+  }
+
+  .publication-title {
+    max-width: 100%;
+    padding: 20px 16px 16px;
+  }
+
+  .publication-grid {
+    max-width: 100%;
+    padding: 0 16px 24px;
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    justify-content: center;
+  }
+}
