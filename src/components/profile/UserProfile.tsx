@@ -1,29 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
 interface UserProfileProps {
   onNavigate?: (view: string) => void;
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
-  const [userData, setUserData] = useState({
-    nombre: 'Juan Pérez',
-    correo: 'juan.perez@email.com',
-    direccion: 'Av. Siempre Viva 742, Springfield',
-    foto: '', // URL de la foto de perfil
-  });
+interface UserData {
+  id_usuario: number;
+  nombre: string;
+  correo: string;
+  direccion: string;
+  telefono?: string;
+  fecha_registro?: string;
+  foto?: string;
+}
 
+export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [tempData, setTempData] = useState({ ...userData });
+  const [tempData, setTempData] = useState<UserData | null>(null);
+  const [error, setError] = useState('');
+
+  // Cargar datos del usuario al montar el componente
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+
+      // Obtener el usuario almacenado en localStorage
+      const usuarioString = localStorage.getItem('usuario');
+      const token = localStorage.getItem('token');
+
+      if (!usuarioString || !token) {
+        setError('No hay sesión activa');
+        setIsLoading(false);
+        return;
+      }
+
+      const usuarioLocal = JSON.parse(usuarioString);
+      const userId = usuarioLocal.id_usuario;
+
+      console.log('🔍 Cargando datos del usuario ID:', userId);
+
+      // Hacer petición al backend para obtener los datos actualizados
+      const response = await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos del usuario');
+      }
+
+      const data = await response.json();
+      console.log('✅ Datos del usuario cargados:', data);
+
+      // Actualizar el estado con los datos recibidos
+      const userInfo: UserData = {
+        id_usuario: data.data?.id_usuario || usuarioLocal.id_usuario,
+        nombre: data.data?.nombre || usuarioLocal.nombre || '',
+        correo: data.data?.correo || usuarioLocal.correo || '',
+        direccion: data.data?.direccion || '',
+        telefono: data.data?.telefono || '',
+        fecha_registro: data.data?.fecha_registro || usuarioLocal.fecha_registro,
+        foto: data.data?.foto || '',
+      };
+
+      setUserData(userInfo);
+      setTempData(userInfo);
+      
+      // Actualizar localStorage con los datos más recientes
+      localStorage.setItem('usuario', JSON.stringify(userInfo));
+
+    } catch (error) {
+      console.error('❌ Error al cargar datos del usuario:', error);
+      setError('Error al cargar los datos del perfil');
+      
+      // Intentar usar los datos del localStorage como respaldo
+      const usuarioString = localStorage.getItem('usuario');
+      if (usuarioString) {
+        const usuarioLocal = JSON.parse(usuarioString);
+        setUserData(usuarioLocal);
+        setTempData(usuarioLocal);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSaveInfo = async () => {
+    if (!tempData || !userData) return;
+
     try {
-      const response = await fetch('http://localhost:8080/api/v1/users/:id', {
+      const token = localStorage.getItem('token');
+      
+      console.log('💾 Actualizando información personal...');
+      
+      const response = await fetch(`http://localhost:8080/api/v1/users/${userData.id_usuario}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           nombre: tempData.nombre,
@@ -31,41 +117,89 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
         }),
       });
 
-      if (response.ok) {
-        setUserData({ ...userData, nombre: tempData.nombre, correo: tempData.correo });
-        setIsEditingInfo(false);
-        alert('Información actualizada exitosamente');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al actualizar');
       }
+
+      const data = await response.json();
+      console.log('✅ Información actualizada:', data);
+
+      // Actualizar el estado local
+      setUserData({ ...userData, nombre: tempData.nombre, correo: tempData.correo });
+      
+      // Actualizar localStorage
+      localStorage.setItem('usuario', JSON.stringify({ 
+        ...userData, 
+        nombre: tempData.nombre, 
+        correo: tempData.correo 
+      }));
+      
+      setIsEditingInfo(false);
+      alert('✅ Información actualizada exitosamente');
+      
     } catch (error) {
-      console.error('Error al actualizar:', error);
-      alert('Error al actualizar la información');
+      console.error('❌ Error al actualizar:', error);
+      alert('❌ Error al actualizar la información');
     }
   };
 
   const handleSaveAddress = async () => {
+    if (!tempData || !userData) return;
+
     try {
-      const response = await fetch('http://localhost:8080/api/v1/users/:id', {
+      const token = localStorage.getItem('token');
+      
+      console.log('💾 Actualizando dirección...');
+      
+      const response = await fetch(`http://localhost:8080/api/v1/users/${userData.id_usuario}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           direccion: tempData.direccion,
         }),
       });
 
-      if (response.ok) {
-        setUserData({ ...userData, direccion: tempData.direccion });
-        setIsEditingAddress(false);
-        alert('Dirección actualizada exitosamente');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al actualizar');
       }
+
+      const data = await response.json();
+      console.log('✅ Dirección actualizada:', data);
+
+      // Actualizar el estado local
+      setUserData({ ...userData, direccion: tempData.direccion });
+      
+      // Actualizar localStorage
+      localStorage.setItem('usuario', JSON.stringify({ 
+        ...userData, 
+        direccion: tempData.direccion 
+      }));
+      
+      setIsEditingAddress(false);
+      alert('✅ Dirección actualizada exitosamente');
+      
     } catch (error) {
-      console.error('Error al actualizar:', error);
-      alert('Error al actualizar la dirección');
+      console.error('❌ Error al actualizar:', error);
+      alert('❌ Error al actualizar la dirección');
     }
   };
 
+  const handleLogout = () => {
+    console.log('👋 Cerrando sesión...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    
+    if (onNavigate) {
+      onNavigate('login');
+    }
+  };
+
+  // Estilos
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     backgroundColor: '#F9FAFB',
@@ -285,6 +419,46 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
     cursor: 'pointer',
   };
 
+  const loadingStyle: React.CSSProperties = {
+    textAlign: 'center',
+    padding: '48px',
+    fontSize: '18px',
+    color: '#6B7280',
+  };
+
+  const errorStyle: React.CSSProperties = {
+    backgroundColor: '#FEE2E2',
+    border: '1px solid #EF4444',
+    borderRadius: '8px',
+    padding: '16px',
+    marginBottom: '24px',
+    color: '#991B1B',
+    textAlign: 'center',
+  };
+
+  // Mostrar loading
+  if (isLoading) {
+    return (
+      <div style={containerStyle}>
+        <div style={loadingStyle}>
+          <div style={{ marginBottom: '16px' }}>⏳</div>
+          Cargando perfil...
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar error si no hay datos
+  if (!userData) {
+    return (
+      <div style={containerStyle}>
+        <div style={errorStyle}>
+          ❌ No se pudieron cargar los datos del perfil
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={containerStyle}>
       {/* Header */}
@@ -294,10 +468,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
           <span>Expirapp</span>
         </div>
         <nav style={navStyle}>
-          <a style={navLinkStyle}>Home</a>
-          <a style={navLinkStyle}>Products</a>
+          <a style={navLinkStyle} onClick={() => onNavigate && onNavigate('home')}>Home</a>
+          <a style={navLinkStyle} onClick={() => onNavigate && onNavigate('products')}>Products</a>
           <a style={{ ...navLinkStyle, color: '#10B981', fontWeight: '500' }}>My Profile</a>
-          <button style={logoutButtonStyle}>Logout</button>
+          <button style={logoutButtonStyle} onClick={handleLogout}>Logout</button>
           <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#D1D5DB' }}></div>
         </nav>
       </div>
@@ -306,10 +480,20 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
       <div style={contentStyle}>
         <h1 style={titleStyle}>Mi Perfil</h1>
 
+        {error && (
+          <div style={errorStyle}>
+            ⚠️ {error}
+          </div>
+        )}
+
         {/* Profile Card */}
         <div style={profileCardStyle}>
           <div style={avatarStyle}>
-            👤
+            {userData.foto ? (
+              <img src={userData.foto} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              '👤'
+            )}
           </div>
           <h2 style={nameStyle}>{userData.nombre}</h2>
           <p style={emailStyle}>{userData.correo}</p>
@@ -338,8 +522,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <label style={labelStyle}>Nombre Completo</label>
               <input
                 type="text"
-                value={isEditingInfo ? tempData.nombre : userData.nombre}
-                onChange={(e) => setTempData({ ...tempData, nombre: e.target.value })}
+                value={isEditingInfo ? (tempData?.nombre || '') : userData.nombre}
+                onChange={(e) => tempData && setTempData({ ...tempData, nombre: e.target.value })}
                 style={isEditingInfo ? inputStyle : inputDisabledStyle}
                 disabled={!isEditingInfo}
               />
@@ -349,8 +533,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
               <label style={labelStyle}>Correo Electrónico</label>
               <input
                 type="email"
-                value={isEditingInfo ? tempData.correo : userData.correo}
-                onChange={(e) => setTempData({ ...tempData, correo: e.target.value })}
+                value={isEditingInfo ? (tempData?.correo || '') : userData.correo}
+                onChange={(e) => tempData && setTempData({ ...tempData, correo: e.target.value })}
                 style={isEditingInfo ? inputStyle : inputDisabledStyle}
                 disabled={!isEditingInfo}
               />
@@ -359,7 +543,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
 
           {isEditingInfo && (
             <div style={buttonGroupStyle}>
-              <button style={cancelButtonStyle} onClick={() => setIsEditingInfo(false)}>
+              <button style={cancelButtonStyle} onClick={() => {
+                setIsEditingInfo(false);
+                setTempData({ ...userData });
+              }}>
                 Cancelar
               </button>
               <button style={saveButtonStyle} onClick={handleSaveInfo}>
@@ -390,8 +577,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
             <label style={labelStyle}>Tu Dirección Principal</label>
             <input
               type="text"
-              value={isEditingAddress ? tempData.direccion : userData.direccion}
-              onChange={(e) => setTempData({ ...tempData, direccion: e.target.value })}
+              value={isEditingAddress ? (tempData?.direccion || '') : (userData.direccion || 'No especificada')}
+              onChange={(e) => tempData && setTempData({ ...tempData, direccion: e.target.value })}
               style={isEditingAddress ? inputStyle : inputDisabledStyle}
               disabled={!isEditingAddress}
             />
@@ -399,7 +586,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
 
           {isEditingAddress && (
             <div style={buttonGroupStyle}>
-              <button style={cancelButtonStyle} onClick={() => setIsEditingAddress(false)}>
+              <button style={cancelButtonStyle} onClick={() => {
+                setIsEditingAddress(false);
+                setTempData({ ...userData });
+              }}>
                 Cancelar
               </button>
               <button style={saveButtonStyle} onClick={handleSaveAddress}>
@@ -415,7 +605,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onNavigate }) => {
           <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '16px' }}>
             ¿Deseas actualizar tu contraseña?
           </p>
-          <button style={changePasswordButtonStyle}>Cambiar Contraseña</button>
+          <button 
+            style={changePasswordButtonStyle}
+            onClick={() => onNavigate && onNavigate('change-password')}
+          >
+            Cambiar Contraseña
+          </button>
         </div>
 
         {/* Footer */}

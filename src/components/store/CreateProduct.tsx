@@ -9,12 +9,13 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
   const [productData, setProductData] = useState({
     nombre: '',
     descripcion: '',
-    categoria: '',
+    // Eliminado: categoria
     fechaVencimiento: '',
-    cantidad: '',
-    precioOriginal: '',
-    precioDescuento: '',
-    marcarDonacion: false,
+    stock: '', // Cambiado de 'cantidad' a 'stock'
+    // Eliminado: precioOriginal
+    precio: '', // Nuevo campo que unifica 'precioOriginal' y 'precioDescuento'
+    estado: 'En preparación', // Nuevo campo con valor por defecto
+    // Eliminado: marcarDonacion
   });
   const [images, setImages] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,9 +38,27 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
       const usuarioString = localStorage.getItem('usuario');
       if (!usuarioString) {
         alert('No hay sesión activa');
+        setIsLoading(false);
         return;
       }
       const usuario = JSON.parse(usuarioString);
+
+      // Validación básica de campos requeridos (nombre, precio, fechaVencimiento)
+      if (!productData.nombre || !productData.precio || !productData.fechaVencimiento) {
+        alert('Por favor, completa los campos Nombre del Producto, Precio y Fecha de Vencimiento.');
+        setIsLoading(false);
+        return;
+      }
+      
+      const payload = {
+        nombre: productData.nombre,
+        descripcion: productData.descripcion || undefined, // opcional
+        precio: parseFloat(productData.precio), // requerido
+        fecha_vencimiento: productData.fechaVencimiento, // requerido
+        stock: productData.stock ? parseInt(productData.stock) : undefined, // opcional
+        estado: productData.estado, // opcional, con default en backend
+        id_tienda: usuario.id_tienda, // requerido
+      };
 
       const response = await fetch('http://localhost:8080/api/v1/products/', {
         method: 'POST',
@@ -47,14 +66,7 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          nombre: productData.nombre,
-          descripcion: productData.descripcion,
-          precio: parseFloat(productData.precioDescuento || productData.precioOriginal),
-          fecha_vencimiento: productData.fechaVencimiento,
-          stock: parseInt(productData.cantidad),
-          id_tienda: usuario.id_tienda, // ID de la tienda del usuario logueado
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -63,12 +75,10 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
         setProductData({
           nombre: '',
           descripcion: '',
-          categoria: '',
           fechaVencimiento: '',
-          cantidad: '',
-          precioOriginal: '',
-          precioDescuento: '',
-          marcarDonacion: false,
+          stock: '',
+          precio: '',
+          estado: 'En preparación',
         });
         setImages([]);
       } else {
@@ -83,6 +93,7 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
     }
   };
 
+  // --- Estilos de la interfaz (se mantienen iguales) ---
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     backgroundColor: '#F9FAFB',
@@ -184,7 +195,7 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
     ...inputStyle,
   };
 
-  const uploadAreaStyle: React.CSSProperties = {
+const uploadAreaStyle: React.CSSProperties = {
     border: '2px dashed #D1D5DB',
     borderRadius: '12px',
     padding: '40px',
@@ -192,6 +203,11 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
     cursor: 'pointer',
     backgroundColor: '#F9FAFB',
     marginBottom: '16px',
+    display: 'flex', // Agregado
+    flexDirection: 'column', // Agregado
+    alignItems: 'center', // Agregado
+    justifyContent: 'center', // Agregado
+    minHeight: '180px', // Opcional: Asegura una altura mínima para la caja
   };
 
   const imagePreviewContainerStyle: React.CSSProperties = {
@@ -225,13 +241,6 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
     boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
   };
 
-  const checkboxContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginTop: '16px',
-  };
-
   const buttonGroupStyle: React.CSSProperties = {
     display: 'flex',
     gap: '12px',
@@ -261,6 +270,8 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
     fontWeight: '500',
   };
 
+  // --- JSX de la interfaz (modificado para reflejar los campos del JSON) ---
+
   return (
     <div style={containerStyle}>
       {/* Header */}
@@ -286,8 +297,9 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
           {/* Left Column */}
           <div>
             <div style={cardStyle}>
+              {/* Nombre del Producto (nombre) */}
               <div style={{ marginBottom: '16px' }}>
-                <label style={labelStyle}>Nombre del Producto</label>
+                <label style={labelStyle}>Nombre del Producto (*)</label>
                 <input
                   type="text"
                   placeholder="Ej: Leche Deslactosada"
@@ -297,6 +309,7 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
                 />
               </div>
 
+              {/* Descripción (descripcion) */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={labelStyle}>Descripción</label>
                 <textarea
@@ -307,76 +320,61 @@ export const CreateProduct: React.FC<CreateProductProps> = ({ onNavigate }) => {
                 />
               </div>
 
+              {/* Fecha de Vencimiento (fecha_vencimiento) */}
               <div style={{ marginBottom: '16px' }}>
-                <label style={labelStyle}>Categoría</label>
+                <label style={labelStyle}>Fecha de Vencimiento (*)</label>
+                <input
+                  type="date"
+                  value={productData.fechaVencimiento}
+                  onChange={(e) => setProductData({ ...productData, fechaVencimiento: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+
+              {/* Campos divididos: Stock y Precio */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                
+                {/* Stock (stock) */}
+                <div>
+                  <label style={labelStyle}>Stock</label>
+                  <input
+                    type="number"
+                    placeholder="Unidades disponibles"
+                    value={productData.stock}
+                    onChange={(e) => setProductData({ ...productData, stock: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                
+                {/* Precio (precio) - Unificado */}
+                <div>
+                  <label style={labelStyle}>Precio de Venta (*)</label>
+                  <input
+                    type="number"
+                    placeholder="$0.00"
+                    value={productData.precio}
+                    onChange={(e) => setProductData({ ...productData, precio: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              {/* Estado (estado) - Nuevo campo con lista desplegable */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}>Estado de Publicación</label>
                 <select
-                  value={productData.categoria}
-                  onChange={(e) => setProductData({ ...productData, categoria: e.target.value })}
+                  value={productData.estado}
+                  onChange={(e) => setProductData({ ...productData, estado: e.target.value })}
                   style={selectStyle}
                 >
-                  <option value="">Selecciona una categoría</option>
-                  <option value="lacteos">Lácteos</option>
-                  <option value="carnes">Carnes</option>
-                  <option value="frutas">Frutas y Verduras</option>
-                  <option value="panaderia">Panadería</option>
-                  <option value="bebidas">Bebidas</option>
-                  <option value="otros">Otros</option>
+                  <option value="En preparación">En preparación</option>
+                  <option value="Listo para recoger">Listo para recoger</option>
+                  <option value="Entregado">Entregado</option>
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={labelStyle}>Fecha de Vencimiento</label>
-                  <input
-                    type="date"
-                    value={productData.fechaVencimiento}
-                    onChange={(e) => setProductData({ ...productData, fechaVencimiento: e.target.value })}
-                    style={inputStyle}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Cantidad</label>
-                  <input
-                    type="number"
-                    placeholder="Unidades"
-                    value={productData.cantidad}
-                    onChange={(e) => setProductData({ ...productData, cantidad: e.target.value })}
-                    style={inputStyle}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <label style={labelStyle}>Precio Original</label>
-                  <input
-                    type="number"
-                    placeholder="$0.00"
-                    value={productData.precioOriginal}
-                    onChange={(e) => setProductData({ ...productData, precioOriginal: e.target.value })}
-                    style={inputStyle}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Precio con Descuento</label>
-                  <input
-                    type="number"
-                    placeholder="$0.00"
-                    value={productData.precioDescuento}
-                    onChange={(e) => setProductData({ ...productData, precioDescuento: e.target.value })}
-                    style={inputStyle}
-                  />
-                </div>
-              </div>
-
-              <div style={checkboxContainerStyle}>
-                <input
-                  type="checkbox"
-                  checked={productData.marcarDonacion}
-                  onChange={(e) => setProductData({ ...productData, marcarDonacion: e.target.checked })}
-                />
-                <label style={{ fontSize: '14px', color: '#374151' }}>Marcar como Donación</label>
-              </div>
+              {/* Eliminado: checkbox 'Marcar como Donación' */}
+              
             </div>
           </div>
 

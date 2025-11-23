@@ -26,17 +26,16 @@ export const StoreProfile: React.FC<StoreProfileProps> = ({ onNavigate }) => {
   React.useEffect(() => {
     const loadStoreData = async () => {
       try {
-        // Obtener datos del usuario del localStorage
         const usuarioString = localStorage.getItem('usuario');
         if (!usuarioString) {
           console.error('No hay usuario en localStorage');
+          setIsLoading(false);
           return;
         }
         
         const usuario = JSON.parse(usuarioString);
         console.log('Usuario desde localStorage:', usuario);
 
-        // Obtener datos de la tienda desde el backend
         const response = await fetch(`http://localhost:8080/api/v1/stores/${usuario.id_usuario}`, {
           method: 'GET',
           headers: {
@@ -48,7 +47,6 @@ export const StoreProfile: React.FC<StoreProfileProps> = ({ onNavigate }) => {
           const data = await response.json();
           console.log('Datos de la tienda desde backend:', data);
           
-          // Mapear los datos al estado
           setStoreData({
             nombreResponsable: data.data?.usuario?.nombre || usuario.nombre || '',
             correo: data.data?.usuario?.correo || usuario.correo || '',
@@ -74,7 +72,7 @@ export const StoreProfile: React.FC<StoreProfileProps> = ({ onNavigate }) => {
 
   const handleSaveInfo = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/users/:id', {
+      const response = await fetch(`http://localhost:8080/api/v1/users/${storeData.idUsuario}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +97,7 @@ export const StoreProfile: React.FC<StoreProfileProps> = ({ onNavigate }) => {
 
   const handleSaveBusiness = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/stores/:id', {
+      const response = await fetch(`http://localhost:8080/api/v1/stores/${storeData.idTienda}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -354,6 +352,16 @@ export const StoreProfile: React.FC<StoreProfileProps> = ({ onNavigate }) => {
     cursor: 'pointer',
   };
 
+  if (isLoading) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Cargando datos de la tienda...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={containerStyle}>
       {/* Header */}
@@ -363,10 +371,12 @@ export const StoreProfile: React.FC<StoreProfileProps> = ({ onNavigate }) => {
           <span>Expirapp</span>
         </div>
         <nav style={navStyle}>
-          <a style={navLinkStyle}>Home</a>
-          <a style={navLinkStyle}>Products</a>
+          <a style={navLinkStyle} onClick={() => onNavigate && onNavigate('create-product')}>Products</a>
           <a style={{ ...navLinkStyle, color: '#10B981', fontWeight: '500' }}>My Profile</a>
-          <button style={logoutButtonStyle}>Logout</button>
+          <button style={logoutButtonStyle} onClick={() => {
+            localStorage.clear();
+            onNavigate && onNavigate('login');
+          }}>Logout</button>
           <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#D1D5DB' }}></div>
         </nav>
       </div>

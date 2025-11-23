@@ -7,6 +7,24 @@ interface LoginProps {
   onNavigate: (view: string) => void;
 }
 
+// Función para decodificar el JWT manualmente (sin dependencias)
+const decodeJWT = (token: string): any => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('❌ Error al decodificar JWT:', error);
+    return null;
+  }
+};
+
 export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -37,36 +55,52 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       }
 
       const data = await response.json();
-      console.log('Login exitoso:', data);
-      console.log('Datos del usuario:', data.data.usuario);
-      console.log('Rol del usuario:', data.data.usuario.rol);
+      console.log('📦 RESPUESTA COMPLETA DEL LOGIN:', JSON.stringify(data, null, 2));
       
       // Guardar el token en localStorage
       if (data.data && data.data.token) {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('usuario', JSON.stringify(data.data.usuario));
-      }
+        
+        console.log('💾 Token guardado:', data.data.token);
+        console.log('👤 Usuario guardado:', JSON.stringify(data.data.usuario, null, 2));
 
-      // Simular un pequeño delay para mostrar el círculo de carga
-      setTimeout(() => {
-        // Redirigir según el rol del usuario
-        const usuario = data.data.usuario;
-        
-        console.log('Redirigiendo usuario con rol:', usuario.rol);
-        
-        // Verificar si es tienda/vendedor
-        if (usuario.rol === 'vendedor') {
-          console.log('Es tienda, redirigiendo a create-product');
-          onNavigate('create-product');
-        } else if (usuario.rol === 'comprador') {
-          console.log('Es comprador, redirigiendo a user-profile');
-          onNavigate('user-profile');
-        } else {
-          // Si no reconoce el rol, ir al perfil de usuario por defecto
-          console.log('Rol no reconocido, redirigiendo a user-profile');
-          onNavigate('user-profile');
-        }
-      }, 1500);
+        // SOLUCIÓN: Decodificar el JWT para obtener el rol
+        const decodedToken = decodeJWT(data.data.token);
+        console.log('🔓 Token decodificado:', decodedToken);
+
+        // Simular un pequeño delay para mostrar el círculo de carga
+        setTimeout(() => {
+          let rolUsuario = '';
+
+          // Intentar obtener el rol del token decodificado
+          if (decodedToken && decodedToken.role) {
+            rolUsuario = decodedToken.role;
+            console.log('✅ Rol extraído del token:', rolUsuario);
+          } else {
+            console.log('⚠️ No se pudo extraer el rol del token');
+          }
+
+          // Normalizar el rol a minúsculas para comparación
+          const rolNormalizado = rolUsuario.toLowerCase().trim();
+          console.log('🔍 Rol normalizado:', rolNormalizado);
+
+          // Redirección basada en el rol
+          if (rolNormalizado === 'tienda' || rolNormalizado === 'vendedor') {
+            console.log('✅ USUARIO ES VENDEDOR/TIENDA');
+            console.log('🚀 Redirigiendo a: create-product');
+            onNavigate('create-product');
+          } else if (rolNormalizado === 'comprador' || rolNormalizado === 'cliente') {
+            console.log('✅ USUARIO ES COMPRADOR');
+            console.log('🚀 Redirigiendo a: user-profile');
+            onNavigate('user-profile');
+          } else {
+            console.log('⚠️ ROL NO RECONOCIDO:', rolNormalizado);
+            console.log('🚀 Redirigiendo por defecto a: user-profile');
+            onNavigate('user-profile');
+          }
+        }, 1500);
+      }
 
     } catch (error) {
       console.error('Error en login:', error);
