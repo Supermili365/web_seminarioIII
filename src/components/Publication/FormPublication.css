@@ -1,0 +1,356 @@
+:root {
+  --bg-page: #f3f4f6;          /* fondo gris del app */
+  --bg-content: #f9fafb;       /* fondo blanco-grisáceo del área principal */
+  --bg-input: #f9fafb;
+  --primary: #22c55e;
+  --primary-soft: #bbf7d0;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-soft: #e5e7eb;
+  --border-upload: #e5e7eb;
+  --error: #ef4444;
+  --radius-lg: 12px;
+  --radius-md: 10px;
+  --font: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+    sans-serif;
+}
+
+/* ===== LAYOUT GENERAL (PANTALLA COMPLETA) ===== */
+
+.publication-page {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-page);
+  font-family: var(--font);
+}
+
+/* La “card” ahora es toda la franja blanca de la app */
+.publication-card {
+  width: 100%;
+  background-color: var(--bg-content);
+}
+
+/* ===== HEADER SUPERIOR: LOGO + ICONOS ===== */
+
+.publication-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 72px;                 /* 👈 mismo padding que contenido */
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.app-logo-text {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button {
+  border-radius: 999px;
+  border: none;
+  background-color: #f3f4f6;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #facc15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+/* ===== TÍTULO + GRID PRINCIPAL ===== */
+
+.publication-title {
+  margin: 0;
+  padding: 24px 72px 20px;            /* 👈 mismo margen que en Figma */
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Grid de 2 columnas: formulario izq + panel fotos der */
+
+.publication-grid {
+  padding: 0 72px 32px;
+  display: grid;
+  /* antes: 1.8fr / 1.2fr */
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+  gap: 24px 40px;
+  align-items: flex-start;
+}
+
+/* ===== FORMULARIO IZQUIERDO ===== */
+
+.publication-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-label {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+/* Inputs, textarea y select: estilo flat */
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+  padding: 12px 14px;              /* 👈 un poco más altos y anchos */
+  font-size: 14px;
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+/* Placeholders suaves */
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.9;
+}
+
+/* Foco */
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: #d1d5db;
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.35);
+  background-color: #ffffff;
+}
+
+/* Textarea */
+
+.textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+/* Quitar flechas en number (para que se parezca al diseño) */
+
+input[type="number"].input::-webkit-inner-spin-button,
+input[type="number"].input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].input {
+  -moz-appearance: textfield;
+}
+
+/* Flecha del select similar a Figma */
+
+.select {
+  background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(50% - 3px),
+    calc(100% - 11px) calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* Checkbox */
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-label {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+/* Errores */
+
+.error-text {
+  font-size: 12px;
+  color: var(--error);
+}
+
+.has-error .input {
+  border-color: var(--error);
+}
+
+/* ===== PANEL DE SUBIR FOTOGRAFÍAS (DERECHA) ===== */
+
+.upload-panel {
+  display: flex;
+  align-items: stretch;
+}
+
+.upload-card {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border-upload);
+  background-color: #f9fafb;
+  padding: 40px 24px;
+  text-align: center;
+  min-height: 320px;
+}
+
+.upload-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.upload-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+.upload-button {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #ffffff;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.upload-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* ===== BOTONES INFERIORES ===== */
+
+.form-actions {
+  margin-top: 24px;                /* más espacio respecto al último campo */
+  padding-top: 20px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  max-width: 520px;                /* 👈 ancho del bloque de botones */
+  margin-left: auto;               /* los alinea con el borde derecho del form */
+  margin-right: 0;
+}
+
+.btn {
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: var(--text-main);
+  border-color: #d1d5db;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  filter: brightness(0.97);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 900px) {
+  .publication-header {
+    padding: 12px 16px;
+  }
+
+  .publication-title {
+    padding: 20px 16px 16px;
+  }
+
+  .publication-grid {
+    padding: 0 16px 24px;
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    justify-content: center;
+  }
+}
