@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Plus, Search, AlertTriangle } from 'lucide-react';
+ codex/analyze-this-project-d947pk
 import { NavigateHandler } from '../../types/navigation.types';
+=======
+ master
 
 interface InventoryItem {
   id: number;
@@ -15,7 +18,11 @@ interface InventoryItem {
 }
 
 interface InventoryManagementProps {
+ codex/analyze-this-project-d947pk
   onNavigate: NavigateHandler;
+=======
+  onNavigate: (view: string) => void;
+ master
 }
 
 export const InventoryManagement: React.FC<InventoryManagementProps> = ({ onNavigate }) => {
@@ -400,5 +407,8 @@ export const InventoryManagement: React.FC<InventoryManagementProps> = ({ onNavi
     </div>
   );
 };
+ codex/analyze-this-project-d947pk
 
 export default InventoryManagement;
+
+ master
