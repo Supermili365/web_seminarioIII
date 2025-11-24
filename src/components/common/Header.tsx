@@ -51,6 +51,8 @@ export const Header: React.FC<HeaderProps> = ({ variant = 'default', user, onLog
       if (view === 'home') navigate('/');
       if (view === 'products') navigate('/');
       if (view === 'profile') navigate('/profile');
+      if (view === 'orders') navigate('/orders');
+      if (view === 'inventory') navigate('/inventory');
     }
   };
 
@@ -77,6 +79,12 @@ export const Header: React.FC<HeaderProps> = ({ variant = 'default', user, onLog
               </button>
               <button onClick={() => handleNavigation('profile')} className="header-nav-link active">
                 My Profile
+              </button>
+              <button onClick={() => handleNavigation('orders')} className="header-nav-link">
+                Pedidos
+              </button>
+              <button onClick={() => handleNavigation('inventory')} className="header-nav-link">
+                Inventario
               </button>
             </>
           )}
