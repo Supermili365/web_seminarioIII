@@ -225,7 +225,8 @@ input[type="number"].input::-webkit-outer-spin-button {
   margin: 0;
 }
 
-input[type="number"].input {
+.textarea {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
