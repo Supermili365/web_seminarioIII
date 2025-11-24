@@ -49,7 +49,7 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
 
         console.log('📤 Registrando comprador:', payload);
 
-        const response = await fetch('http://localhost:8080/api/v1/users/', {
+        const response = await fetch('http://localhost:8081/api/v1/users/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -85,7 +85,7 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
 
         console.log('📤 Registrando tienda:', payload);
 
-        const response = await fetch('http://localhost:8080/api/v1/stores/', {
+        const response = await fetch('http://localhost:8081/api/v1/stores/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
