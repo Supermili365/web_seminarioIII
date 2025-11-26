@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Minus, Plus } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { CartItem as CartItemType, CartStore } from '../../../types/menu.types';
 import { Header } from '../../common/Header';
 import './menu.css';
@@ -299,7 +299,7 @@ const Cart: React.FC<AppProps> = ({ cartData: externalCartData, setCartData: ext
                 <Header />
                 <main className="cart-main empty">
                     <div className="empty-cart-card">
-                        <Trash2 size={48} className="empty-cart-icon" />
+                        <ShoppingCart size={48} className="empty-cart-icon" />
                         <h2 className="empty-cart-title">Tu Carrito Está Vacío</h2>
                         <p className="empty-cart-text">Parece que aún no has agregado productos con ofertas cerca de su fecha de caducidad.</p>
                         <button

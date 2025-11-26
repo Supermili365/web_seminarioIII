@@ -29,6 +29,7 @@ export const productService = {
         [];
 
       return list.map((p) => {
+        console.log('Mapping product:', p); // Debug log to see raw product data
         // Construcción correcta de la imagen
         let img =
           p.imagen_url ??
@@ -71,7 +72,7 @@ export const productService = {
               : p.descuento
                 ? 'Oferta'
                 : undefined,
-          storeId: p.id_tienda,
+          storeId: p.id_tienda ?? p.store_id ?? p.storeId ?? p.IdTienda ?? p.StoreId ?? p.IDTienda ?? p.tienda?.id ?? p.tienda?.id_tienda ?? p.store?.id ?? 0,
         };
       });
 

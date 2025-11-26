@@ -310,7 +310,7 @@
     transform: translateY(0);
 }
 
-/* Footer & Empty State (Preserve or slightly tweak) */
+/* Footer & Empty State */
 .cart-footer {
     margin-top: auto;
     padding: 3rem 0;
@@ -361,6 +361,7 @@
     padding: 4rem 2rem;
     text-align: center;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
     max-width: 500px;
     width: 100%;
 }
@@ -370,6 +371,9 @@
     margin-bottom: 1.5rem;
     width: 64px;
     height: 64px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .empty-cart-title {

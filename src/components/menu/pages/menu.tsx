@@ -199,7 +199,13 @@ const App: React.FC = () => {
 
       let store: CartStore | undefined = next.find(s => s.store === storeName);
       if (!store) {
-        store = { id: product.storeId || Date.now(), store: storeName, items: [] };
+        // Debug log to see why storeId might be missing
+        console.log('Adding new store to cart. Product:', product);
+        const safeStoreId = product.storeId || 0;
+        if (!product.storeId) {
+          console.warn(`Product "${product.name}" is missing storeId. Defaulting to 0.`, product);
+        }
+        store = { id: safeStoreId, store: storeName, items: [] };
         next.push(store);
       }
 

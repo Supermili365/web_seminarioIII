@@ -283,11 +283,6 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ cartData = [], setCartDat
     // Estado para la opción de pago seleccionada
     const [selectedPayment, setSelectedPayment] = useState<string>('card');
 
-    // Leer la opción de entrega seleccionada desde la navegación
-    const location = useLocation();
-    // Tipado inferido como string | undefined | null. Asumimos string si existe.
-    const selectedDelivery: string | undefined = (location.state as { selectedOption?: string })?.selectedOption;
-
     const navigate = useNavigate();
 
     // Estado para manejo de petición de orden
@@ -309,15 +304,13 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ cartData = [], setCartDat
     // Calcular costos
     const subtotal: number = flattenedItems.reduce((s, it) => s + (it.price * it.quantity), 0);
 
-    // Lógica de Envío: $5.00 por envío a domicilio, gratis si es recogida.
-    // Usamos el id de la opción del componente anterior.
-    const shippingAmount: number = (selectedDelivery && selectedDelivery.includes('pickup')) ? 0 : 5000;
-    const shipping: number = subtotal > 0 ? shippingAmount : 0;
+    // Lógica de Envío: Siempre es recogida en tienda (gratis)
+    const shipping: number = 0;
 
     // Tasa de impuestos
     const TAX_RATE = 0.19;
-    const taxes: number = subtotal * TAX_RATE;
 
+    const taxes: number = subtotal * TAX_RATE;
     const total: number = subtotal + shipping + taxes;
 
 
@@ -332,10 +325,21 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ cartData = [], setCartDat
         // Obtener ID del cliente desde localStorage
         const userStr = localStorage.getItem('usuario');
         const user = userStr ? JSON.parse(userStr) : null;
-        const id_cliente = user?.id_usuario || user?.id;
+        console.log('User from localStorage:', user); // Debug
+
+        // Intentar obtener el ID de varias propiedades posibles
+        const id_cliente = user?.id_usuario || user?.id || user?.ID || user?.ClientID;
 
         if (!id_cliente) {
+            console.error('No ClientID found in user object:', user);
             setOrderError('No se pudo identificar al usuario. Por favor, inicia sesión nuevamente.');
+            return;
+        }
+
+        // Obtener token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setOrderError('No se encontró sesión activa. Por favor, inicia sesión nuevamente.');
             return;
         }
 
@@ -348,37 +352,72 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ cartData = [], setCartDat
         for (const store of cartData) {
             // Calcular totales por tienda
             const storeItems = store.items.map(i => {
-                // Extraer ID numérico si es posible (formato "p-123")
-                const idMatch = i.itemId.match(/p-(\d+)/);
-                const numericId = idMatch ? parseInt(idMatch[1]) : i.itemId;
+                // Lógica robusta para obtener el ProductID
+                let numericId = 0;
+                if (typeof i.itemId === 'number') {
+                    numericId = i.itemId;
+                } else if (typeof i.itemId === 'string') {
+                    // Intentar parsear directamente
+                    const parsed = parseInt(i.itemId, 10);
+                    if (!isNaN(parsed)) {
+                        numericId = parsed;
+                    } else {
+                        // Intentar extraer de formato "p-123"
+                        const idMatch = i.itemId.match(/p-(\d+)/);
+                        if (idMatch) {
+                            numericId = parseInt(idMatch[1], 10);
+                        }
+                    }
+                }
+
+                if (!numericId) {
+                    console.error('Invalid ProductID for item:', i);
+                }
+
+                const unitPrice = Number(i.salePrice) || Number(i.originalPrice) || 0;
 
                 return {
-                    item_id: numericId,
-                    cantidad: i.quantity,
-                    precio_unitario: Number(i.salePrice) || Number(i.originalPrice) || 0
+                    ProductID: numericId,
+                    Quantity: i.quantity,
+                    UnitPrice: unitPrice
                 };
             });
 
-            const storeSubtotal = storeItems.reduce((sum, item) => sum + (item.precio_unitario * item.cantidad), 0);
-            // Asumimos envío por tienda si no es pickup
-            const storeShipping = (selectedDelivery && !selectedDelivery.includes('pickup')) ? 5000 : 0;
+            // Filtrar items inválidos si es necesario, o dejar que falle para notar el error
+            if (storeItems.some(item => !item.ProductID || item.UnitPrice <= 0)) {
+                console.error('Invalid items detected:', storeItems);
+                results.push({ store: store.store, success: false, error: 'Datos de productos inválidos (ID o Precio).' });
+                continue;
+            }
+
+            const storeSubtotal = storeItems.reduce((sum, item) => sum + (item.UnitPrice * item.Quantity), 0);
+            const storeShipping = 0; // Siempre 0 por recogida
             const storeTaxes = storeSubtotal * 0.19;
             const storeTotal = storeSubtotal + storeShipping + storeTaxes;
 
+            // Log IDs to debug int4 overflow
+            console.log(`Debug IDs - ClientID: ${id_cliente} (type: ${typeof id_cliente}), StoreID: ${store.id} (type: ${typeof store.id})`);
+
             const payload = {
-                id_cliente: id_cliente,
-                id_tienda: store.id,
-                fecha_compra: new Date().toISOString(),
-                metodo_entrega: selectedDelivery,
-                metodo_pago: selectedPayment,
-                total_pedido: storeTotal.toFixed(2),
-                items: storeItems
+                client_id: id_cliente,
+                store_id: store.id,
+                payment_method: selectedPayment,
+                items: storeItems.map(item => ({
+                    product_id: item.ProductID,
+                    quantity: item.Quantity,
+                    unit_price: item.UnitPrice
+                }))
             };
 
+            console.log('Sending Payload:', JSON.stringify(payload, null, 2)); // Debug
+
             try {
-                const res = await fetch('http://localhost:8081/api/v1/orders', {
+                const res = await fetch('/api/v1/orders', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify(payload),
                 });
 
@@ -430,22 +469,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ cartData = [], setCartDat
                             Elige tu método de pago
                         </h2>
 
-                        {/* Indicación de Entrega Seleccionada */}
-                        <div className="delivery-info-box">
-                            <p className="delivery-info-label">Modo de Entrega Seleccionado:</p>
-                            <p className="delivery-info-text">
-                                {selectedDelivery === 'pickup'
-                                    ? 'Recoger en tienda (Sin costo de envío).'
-                                    : 'Envío a domicilio (Se aplica tarifa de envío).'
-                                }
-                            </p>
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="btn-change-delivery"
-                            >
-                                <Edit size={14} className="mr-1" /> Cambiar opción de entrega
-                            </button>
-                        </div>
+                        {/* NOTA: Se eliminó la selección de entrega, siempre es recogida en tienda */}
 
                         {/* Opciones de Pago */}
                         <div className="payment-options-list">
