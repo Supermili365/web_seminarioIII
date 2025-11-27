@@ -210,10 +210,22 @@ const App: React.FC = () => {
       }
 
       const existing: CartItem | undefined = store.items.find(i => i.itemId === itemId);
+      const availableStock = typeof product.stock === 'number' ? product.stock : null;
+      const maxAllowed = availableStock ?? Number.MAX_SAFE_INTEGER;
+      const currentQuantity = existing?.quantity ?? 0;
+      const desiredQuantity = currentQuantity + quantity;
+
+      if (availableStock !== null && desiredQuantity > availableStock && currentQuantity >= availableStock) {
+        return prev;
+      }
 
       if (existing) {
-        existing.quantity = (existing.quantity || 0) + quantity;
+        existing.quantity = Math.min(desiredQuantity, maxAllowed);
+        existing.stock = availableStock;
       } else {
+        const initialQuantity = Math.min(quantity, maxAllowed);
+        if (initialQuantity <= 0) return prev;
+
         const newItem: CartItem = {
           itemId,
           name: product.name,
@@ -222,8 +234,9 @@ const App: React.FC = () => {
           expiryDate: product.fecha_vencimiento || '',
           originalPrice: product.originalPrice ?? product.price ?? 0,
           salePrice: product.price ?? 0,
-          quantity: quantity,
-          imageUrl: product.imageUrl || ''
+          quantity: initialQuantity,
+          imageUrl: product.imageUrl || '',
+          stock: availableStock
         };
         store.items.push(newItem);
       }
@@ -354,9 +367,12 @@ const App: React.FC = () => {
                   </button>
                   <button
                     onClick={() => { addToCart(selectedProduct, 1); setSelectedProduct(null); }}
+                    disabled={typeof selectedProduct.stock === 'number' && selectedProduct.stock <= 0}
                     className="btn-modal-add"
                   >
-                    Agregar al carrito
+                    {typeof selectedProduct.stock === 'number' && selectedProduct.stock <= 0
+                      ? 'Sin stock'
+                      : 'Agregar al carrito'}
                   </button>
                 </div>
               </div>
