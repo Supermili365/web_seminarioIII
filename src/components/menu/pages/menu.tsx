@@ -1,8 +1,8 @@
 import './menu.css';
 import React, { useState, useEffect } from 'react';
 import Cart from './Cart.tsx'
-import Payment from './Payment.tsx';
-import PaymentMethod from './PaymentMethod.tsx';
+import Payment from './payment.tsx';
+import PaymentMethod from './paymentMethod.tsx';
 import { Routes, Route, Link } from 'react-router-dom';
 import { Search, SlidersHorizontal, MapPin, DollarSign, Leaf, Heart, Check, ChevronDown, ShoppingCart, Menu, X } from 'lucide-react';
 import { Product, CartStore, CartItem } from '../../../types/menu.types';

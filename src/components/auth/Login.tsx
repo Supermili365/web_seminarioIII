@@ -31,13 +31,8 @@ export const Login: React.FC = () => {
       // Simular un pequeño delay para mejor UX
       setTimeout(() => {
         setIsLoading(false);
-        if (role === 'tienda' || role === 'vendedor') {
-          navigate('/create-product');
-        } else if (role === 'comprador' || role === 'cliente') {
-          navigate('/profile');
-        } else {
-          navigate('/profile');
-        }
+        // Todos los usuarios van al home después de iniciar sesión
+        navigate('/');
       }, 1000);
 
     } catch (error) {
@@ -177,4 +172,3 @@ export const Login: React.FC = () => {
     </>
   );
 };
-

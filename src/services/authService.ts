@@ -121,6 +121,40 @@ export const authService = {
     return responseData;
   },
 
+  // -------------------------------------------------------------------
+  // 🔥 MÉTODO NUEVO: getMe()
+  // Llama al backend para obtener los datos del usuario según el token.
+  // -------------------------------------------------------------------
+  async getMe(token: string) {
+    const response = await fetch(`${API_URL}/users/me`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('No se pudo obtener la información del usuario autenticado');
+    }
+
+    return response.json();
+  },
+
+  // -------------------------------------------------------------------
+  // 🔥 MÉTODO NUEVO (Opcional): obtener rol desde JWT sin login
+  // -------------------------------------------------------------------
+  getRoleFromToken(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+      return decoded.role?.toLowerCase().trim() || '';
+    } catch {
+      return '';
+    }
+  },
+
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
