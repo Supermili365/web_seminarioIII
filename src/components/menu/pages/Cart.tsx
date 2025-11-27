@@ -200,9 +200,10 @@ interface OrderSummaryProps {
     totalDiscount: number;
     totalToPay: number;
     onProceed: () => void;
+    hasStockIssues: boolean;
 }
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, totalDiscount, totalToPay, onProceed }) => (
+const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, totalDiscount, totalToPay, onProceed, hasStockIssues }) => (
     <div className="order-summary">
         <h3 className="summary-title">
             Resumen del Pedido
@@ -227,6 +228,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, totalDiscount, to
         <button
             onClick={onProceed}
             className="btn-proceed"
+            disabled={hasStockIssues}
         >
             Proceder al Pago
         </button>
@@ -240,6 +242,13 @@ interface AppProps {
     setCartData?: React.Dispatch<React.SetStateAction<CartData>>;
 }
 
+interface StockIssue {
+    store: string;
+    name: string;
+    available: number;
+    quantity: number;
+}
+
 // --- Componente Principal ---
 
 const Cart: React.FC<AppProps> = ({ cartData: externalCartData, setCartData: externalSetCartData }) => {
@@ -249,6 +258,25 @@ const Cart: React.FC<AppProps> = ({ cartData: externalCartData, setCartData: ext
     const setCartData = externalSetCartData ?? setLocalCartData;
 
     const navigate = useNavigate();
+
+    const stockIssues = useMemo<StockIssue[]>(() => {
+        const issues: StockIssue[] = [];
+
+        cartData.forEach(store => {
+            store.items.forEach(item => {
+                if (typeof item.stock === 'number' && item.quantity > item.stock) {
+                    issues.push({
+                        store: store.store,
+                        name: item.name,
+                        available: item.stock,
+                        quantity: item.quantity
+                    });
+                }
+            });
+        });
+
+        return issues;
+    }, [cartData]);
 
     // Lógica de cálculo del carrito tipada
     const { subtotal, totalDiscount, totalToPay } = useMemo<{ subtotal: number; totalDiscount: number; totalToPay: number }>(() => {
@@ -303,6 +331,11 @@ const Cart: React.FC<AppProps> = ({ cartData: externalCartData, setCartData: ext
         });
     };
 
+    const handleProceedToPayment = () => {
+        if (stockIssues.length > 0) return;
+        navigate('/payment');
+    };
+
     // Si el carrito está vacío
     if (cartData.length === 0) {
         return (
@@ -354,8 +387,22 @@ const Cart: React.FC<AppProps> = ({ cartData: externalCartData, setCartData: ext
                             subtotal={subtotal}
                             totalDiscount={totalDiscount}
                             totalToPay={totalToPay}
-                            onProceed={() => navigate('/payment')}
+                            onProceed={handleProceedToPayment}
+                            hasStockIssues={stockIssues.length > 0}
                         />
+                        {stockIssues.length > 0 && (
+                            <div className="stock-warning">
+                                <strong>Ajusta las cantidades para continuar</strong>
+                                <p>Estos productos superan el stock disponible:</p>
+                                <ul>
+                                    {stockIssues.map(issue => (
+                                        <li key={`${issue.store}-${issue.name}`}>
+                                            {issue.name} ({issue.store}): {issue.quantity} solicitados, {issue.available} en stock.
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

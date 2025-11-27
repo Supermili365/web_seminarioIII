@@ -300,6 +300,34 @@
     box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);
 }
 
+.btn-proceed:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-proceed:disabled:hover {
+    background-color: #9ca3af;
+    transform: none;
+}
+
+.stock-warning {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background-color: #fef2f2;
+    border: 1px solid #fecdd3;
+    color: #b91c1c;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.stock-warning ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+}
+
 .btn-proceed:hover {
     background-color: #15803d;
     transform: translateY(-2px);
