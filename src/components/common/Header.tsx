@@ -95,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ variant = 'default', user, onLog
       if (view === 'profile') navigate(isSeller ? '/store-profile' : '/profile');
       if (view === 'orders') navigate('/orders');
       if (view === 'inventory') navigate('/inventory');
+      if (view === 'create-product') navigate('/create-product');
     }
   };
 
@@ -173,6 +174,14 @@ export const Header: React.FC<HeaderProps> = ({ variant = 'default', user, onLog
                   <ShoppingCart size={20} />
                 </button>
               </Link>
+            )}
+                        {isSeller && (
+              <button
+                onClick={() => handleNavigation('create-product')}
+                className="btn-logout"
+              >
+                Publicar producto
+              </button>
             )}
             <button onClick={handleLogoutInternal} className="btn-logout">
               Cerrar Sesión
