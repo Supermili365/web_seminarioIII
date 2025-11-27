@@ -95,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ variant = 'default', user, onLog
       if (view === 'profile') navigate(isSeller ? '/store-profile' : '/profile');
       if (view === 'orders') navigate('/orders');
       if (view === 'inventory') navigate('/inventory');
+      if (view === 'publicar') navigate('/publicar');
     }
   };
 
@@ -143,12 +144,21 @@ export const Header: React.FC<HeaderProps> = ({ variant = 'default', user, onLog
 
               {/* Enlaces para Vendedor */}
               {isSeller && (
-                <button
-                  onClick={() => handleNavigation('inventory')}
-                  className={`header-nav-link ${isActive('/inventory') ? 'active' : ''}`}
-                >
-                  Inventario
-                </button>
+                <>
+                  <button
+                    onClick={() => handleNavigation('inventory')}
+                    className={`header-nav-link ${isActive('/inventory') ? 'active' : ''}`}
+                  >
+                    Inventario
+                  </button> 
+
+                  <button
+                    onClick={() => handleNavigation('publicar')}
+                    className={`header-nav-link ${isActive('/publicar') ? 'active' : ''}`}
+                  >
+                    Publicar
+                  </button>
+                </>
               )}
 
               {/* Perfil - Común pero con destino diferente */}

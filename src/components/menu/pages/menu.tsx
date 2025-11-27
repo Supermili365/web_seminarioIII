@@ -21,6 +21,8 @@ import { CreateProduct } from '../../store/CreateProduct';
 import { useNavigate } from 'react-router-dom';
 import OrderHistory from '../../orders/OrderHistory';
 import InventoryManagement from '../../inventory/InventoryManagement'
+import FormPublication from '../../Publication/FormPublication.tsx';
+
 
 interface HomeProps {
   onlyDonations: boolean;
@@ -288,6 +290,7 @@ const App: React.FC = () => {
         {/* Orders & Inventory */}
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/inventory" element={<InventoryManagement />} />
+        <Route path="/publicar" element={<FormPublication />} />
       </Routes>
 
       {selectedProduct && (
