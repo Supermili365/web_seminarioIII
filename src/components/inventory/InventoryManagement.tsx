@@ -35,37 +35,19 @@ const InventoryManagement: React.FC = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const usuarioString = localStorage.getItem('usuario');
-      
-      console.log('=== INICIO DEBUG INVENTARIO ===');
-      console.log('📦 Token existe:', !!token);
-      console.log('📦 Usuario string completo:', usuarioString);
-      
+
       if (!usuarioString) {
-        console.error('❌ No hay usuario en localStorage');
         setLoading(false);
         return;
       }
 
       const usuario = JSON.parse(usuarioString);
-      console.log('👤 Usuario parseado completo:', JSON.stringify(usuario, null, 2));
-      console.log('👤 Claves del usuario:', Object.keys(usuario));
-      
-      // Buscar id_tienda en diferentes posibles ubicaciones
       let storeId = usuario.id_tienda || usuario.idTienda || usuario.tienda_id || usuario.storeId;
-      
-      console.log('🏪 Store ID extraído:', storeId);
-      console.log('🏪 Tipo de Store ID:', typeof storeId);
-      
-      // Si no hay id_tienda, intentar obtenerlo del perfil de tienda
+
       if (!storeId) {
-        console.warn('⚠️ No se encontró id_tienda directamente, intentando obtenerlo del backend...');
-        
         const userId = usuario.id_usuario || usuario.idUsuario;
-        console.log('👤 Intentando con user ID:', userId);
-        
         if (userId) {
           try {
-            // Obtener el perfil de usuario para conseguir el id_tienda
             const userResponse = await fetch(`http://localhost:8081/api/v1/users/${userId}`, {
               method: 'GET',
               headers: {
@@ -73,37 +55,28 @@ const InventoryManagement: React.FC = () => {
                 'Content-Type': 'application/json'
               }
             });
-            
+
             if (userResponse.ok) {
               const userData = await userResponse.json();
-              console.log('✅ Datos de usuario desde backend:', userData);
               storeId = userData.data?.id_tienda || userData.id_tienda;
-              console.log('🏪 Store ID obtenido del backend:', storeId);
-              
-              // Actualizar localStorage con el id_tienda
               if (storeId) {
                 const updatedUser = { ...usuario, id_tienda: storeId };
                 localStorage.setItem('usuario', JSON.stringify(updatedUser));
-                console.log('✅ localStorage actualizado con id_tienda');
               }
             }
           } catch (err) {
-            console.error('❌ Error al obtener datos de usuario:', err);
+            console.error('Error al obtener datos de usuario:', err);
           }
         }
       }
 
       if (!storeId) {
-        console.error('❌ No se pudo obtener id_tienda de ninguna fuente');
-        console.error('❌ Usuario completo:', usuario);
         alert('No se encontró el ID de la tienda. Por favor, cierra sesión y vuelve a iniciar.');
         setLoading(false);
         return;
       }
 
       const url = `http://localhost:8081/api/v1/stores/${storeId}/products`;
-      console.log('🌐 URL completa:', url);
-
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -112,31 +85,19 @@ const InventoryManagement: React.FC = () => {
         }
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
-
-      const responseText = await response.text();
-      console.log('📄 Response text (raw):', responseText);
-
       if (response.ok) {
+        const responseText = await response.text();
         let data;
         try {
           data = JSON.parse(responseText);
-          console.log('✅ Datos parseados:', data);
-          console.log('✅ data.data?.productos length:', data.data?.productos?.length);
         } catch (parseError) {
-          console.error('❌ Error al parsear JSON:', parseError);
+          console.error('Error al parsear JSON:', parseError);
           setLoading(false);
           return;
         }
-        
+
         const productsList = data.data?.productos || [];
-        console.log('📦 Cantidad de productos:', productsList.length);
-        
-        if (productsList.length > 0) {
-          console.log('📦 Primer producto (ejemplo):', productsList[0]);
-        }
-        
+
         const mappedProducts = productsList.map((p: any) => ({
           id: p.id_producto,
           nombre: p.nombre || '',
@@ -146,22 +107,23 @@ const InventoryManagement: React.FC = () => {
           precio_oferta: p.precio || 0,
           stock: p.stock || 0,
           estado: (p.stock || 0) > 0 ? 'Activo' : 'Agotado',
-          imagen_url: p.imagen_url || ''
+          imagen_url: (() => {
+            let img = p.imagen_url || null;
+            if (img) {
+              img = img.replace(/\\/g, '/');
+              if (!img.startsWith('http')) {
+                img = `http://localhost:8081/${img.replace(/^\/+/, '')}`;
+              }
+              return img;
+            }
+            return '';
+          })()
         }));
 
-        console.log('✅ Productos mapeados finales:', mappedProducts);
-        console.log('📊 Total de productos mapeados:', mappedProducts.length);
-        
         setProducts(mappedProducts);
-        console.log('=== FIN DEBUG INVENTARIO ===');
-      } else {
-        console.error('❌ Response no OK');
-        console.error('❌ Status:', response.status);
-        console.error('❌ Response body:', responseText);
       }
     } catch (error) {
-      console.error('❌ Error capturado en catch:', error);
-      console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack available');
+      console.error('Error capturado en catch:', error);
     } finally {
       setLoading(false);
     }
@@ -174,8 +136,6 @@ const InventoryManagement: React.FC = () => {
   const handleToggleVisibility = async (productId: number) => {
     try {
       const token = localStorage.getItem('token');
-      
-      // Endpoint placeholder
       await fetch(`http://localhost:8081/api/v1/products/${productId}/toggle-visibility`, {
         method: 'PATCH',
         headers: {
@@ -183,8 +143,6 @@ const InventoryManagement: React.FC = () => {
           'Content-Type': 'application/json'
         }
       });
-
-      // Recargar productos
       loadProducts();
     } catch (error) {
       console.error('Error al cambiar visibilidad:', error);
@@ -198,16 +156,12 @@ const InventoryManagement: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      
-      // Endpoint placeholder
       await fetch(`http://localhost:8081/api/v1/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
-      // Recargar productos
       loadProducts();
       alert('Producto eliminado exitosamente');
     } catch (error) {
@@ -218,10 +172,10 @@ const InventoryManagement: React.FC = () => {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDate = !filterDate || product.fecha_caducidad === filterDate;
     const matchesStatus = !filterStatus || product.estado === filterStatus;
-    
+
     return matchesSearch && matchesDate && matchesStatus;
   });
 
@@ -236,7 +190,7 @@ const InventoryManagement: React.FC = () => {
 
   return (
     <div className="inventory-container">
-      <Header variant="default" user={{ name: 'Tienda' }} onLogout={() => navigate('/login')} />
+      <Header />
 
       <div className="inventory-content">
         <div className="inventory-header">
@@ -260,7 +214,7 @@ const InventoryManagement: React.FC = () => {
             />
           </div>
 
-          <select 
+          <select
             className="filter-select"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
@@ -270,7 +224,7 @@ const InventoryManagement: React.FC = () => {
             <option value="2024-12-22">22/12/2024</option>
           </select>
 
-          <select 
+          <select
             className="filter-select"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
@@ -281,7 +235,7 @@ const InventoryManagement: React.FC = () => {
             <option value="quesos">Quesos</option>
           </select>
 
-          <select 
+          <select
             className="filter-select"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -317,7 +271,7 @@ const InventoryManagement: React.FC = () => {
                       <tr key={product.id}>
                         <td>
                           <div className="product-cell">
-                            <div className="product-image">
+                            <div className="inventory-product-image">
                               {product.imagen_url ? (
                                 <img src={product.imagen_url} alt={product.nombre} />
                               ) : (
@@ -341,21 +295,21 @@ const InventoryManagement: React.FC = () => {
                         </td>
                         <td>
                           <div className="actions-cell">
-                            <button 
+                            <button
                               className="action-btn action-edit"
                               onClick={() => handleEdit(product.id)}
                               title="Editar"
                             >
                               <Edit2 size={18} />
                             </button>
-                            <button 
+                            <button
                               className="action-btn action-hide"
                               onClick={() => handleToggleVisibility(product.id)}
                               title="Ocultar"
                             >
                               <EyeOff size={18} />
                             </button>
-                            <button 
+                            <button
                               className="action-btn action-delete"
                               onClick={() => handleDelete(product.id)}
                               title="Eliminar"

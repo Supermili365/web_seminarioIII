@@ -24,11 +24,7 @@ export const UserProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-sans w-full">
       {/* Header Centralizado - Siempre visible */}
-      <Header
-        variant="default"
-        user={userData ? { name: userData.nombre } : null}
-        onLogout={handleLogout}
-      />
+      <Header />
 
       <div className="user-profile-container">
         {isLoading ? (

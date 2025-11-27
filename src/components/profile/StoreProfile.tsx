@@ -31,7 +31,7 @@ export const StoreProfile: React.FC = () => {
           setIsLoading(false);
           return;
         }
-        
+
         const usuario = JSON.parse(usuarioString);
         console.log('Usuario desde localStorage:', usuario);
 
@@ -45,7 +45,7 @@ export const StoreProfile: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           console.log('Datos de la tienda desde backend:', data);
-          
+
           setStoreData({
             nombreResponsable: data.data?.usuario?.nombre || usuario.nombre || '',
             correo: data.data?.usuario?.correo || usuario.correo || '',
@@ -128,7 +128,7 @@ export const StoreProfile: React.FC = () => {
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     backgroundColor: '#F9FAFB',
-    padding: '24px',
+    padding: '0',
   };
 
   const headerStyle: React.CSSProperties = {
@@ -175,6 +175,7 @@ export const StoreProfile: React.FC = () => {
   const contentStyle: React.CSSProperties = {
     maxWidth: '800px',
     margin: '0 auto',
+    padding: '24px',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -364,14 +365,7 @@ export const StoreProfile: React.FC = () => {
   return (
     <div style={containerStyle}>
       {/* Header Centralizado */}
-      <Header 
-        variant="default" 
-        user={{ name: storeData.nombreResponsable }}
-        onLogout={() => {
-            localStorage.clear();
-            navigate('/login');
-        }}
-      />
+      <Header />
 
       {/* Content */}
       <div style={contentStyle}>
