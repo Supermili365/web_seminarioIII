@@ -28,7 +28,8 @@ const initialCartData: CartData = [
                 originalPrice: 5.00,
                 salePrice: 2.50,
                 quantity: 1,
-                imageUrl: "https://placehold.co/100x100/e0f0e3/10B981?text=Yogur"
+                imageUrl: "https://placehold.co/100x100/e0f0e3/10B981?text=Yogur",
+                stock: 5
             },
             {
                 itemId: 'a2',
@@ -39,7 +40,8 @@ const initialCartData: CartData = [
                 originalPrice: 3.50,
                 salePrice: 1.75,
                 quantity: 2,
-                imageUrl: "https://placehold.co/100x100/f5e8d9/52433d?text=Pan"
+                imageUrl: "https://placehold.co/100x100/f5e8d9/52433d?text=Pan",
+                stock: 8
             }
         ]
     },
@@ -56,7 +58,8 @@ const initialCartData: CartData = [
                 originalPrice: 2.00,
                 salePrice: 1.00,
                 quantity: 1,
-                imageUrl: "https://placehold.co/100x100/fcf1c5/f39c12?text=Leche"
+                imageUrl: "https://placehold.co/100x100/fcf1c5/f39c12?text=Leche",
+                stock: 3
             }
         ]
     }
@@ -82,9 +85,10 @@ interface QuantityControlProps {
     onIncrease: (itemId: string, type: 'increase') => void;
     onDecrease: (itemId: string, type: 'decrease') => void;
     itemId: string;
+    maxStock?: number | null;
 }
 
-const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onIncrease, onDecrease, itemId }) => (
+const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onIncrease, onDecrease, itemId, maxStock }) => (
     <div className="quantity-control">
         <button
             onClick={() => onDecrease(itemId, 'decrease')}
@@ -99,6 +103,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onIncrease,
         <button
             onClick={() => onIncrease(itemId, 'increase')}
             className="quantity-btn"
+            disabled={typeof maxStock === 'number' ? quantity >= maxStock : false}
         >
             <Plus size={16} />
         </button>
@@ -154,6 +159,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, updateQuantity, removeItem })
                 itemId={item.itemId}
                 onIncrease={(id, type) => updateQuantity(id, type)}
                 onDecrease={(id, type) => updateQuantity(id, type)}
+                maxStock={item.stock}
             />
             <button
                 onClick={() => removeItem(item.itemId)}
@@ -271,9 +277,14 @@ const Cart: React.FC<AppProps> = ({ cartData: externalCartData, setCartData: ext
             ...store,
             items: store.items.map(item => {
                 if (item.itemId === itemId) {
-                    const newQuantity = type === 'increase' ? item.quantity + 1 : item.quantity - 1;
-                    // La cantidad mínima es 1
-                    return { ...item, quantity: Math.max(1, newQuantity) };
+                    let newQuantity = type === 'increase' ? item.quantity + 1 : item.quantity - 1;
+                    newQuantity = Math.max(1, newQuantity);
+
+                    if (typeof item.stock === 'number') {
+                        newQuantity = Math.min(newQuantity, item.stock);
+                    }
+
+                    return { ...item, quantity: newQuantity };
                 }
                 return item;
             })

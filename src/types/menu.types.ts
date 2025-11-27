@@ -50,7 +50,7 @@ export interface ProductsApiResponse {
 }
 
 export interface CartItem {
-  itemId: string; 
+  itemId: string;
   name: string;
   brand: string;
   size: string;
@@ -59,6 +59,7 @@ export interface CartItem {
   salePrice: number;
   quantity: number;
   imageUrl: string;
+  stock?: number | null;
 }
 
 export interface CartStore {
