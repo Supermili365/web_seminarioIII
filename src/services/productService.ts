@@ -1,5 +1,6 @@
-import { Product } from '../types/menu.types';
-
+import type { Product, ApiProduct } from '../types/menu.types';
+// Asegúrate de tener también MOCK_PRODUCTS si aún lo usas como fallback
+// import { MOCK_PRODUCTS } from '../mocks/products';
 const API_URL = 'http://localhost:8081/api/v1';
 
 export const productService = {
@@ -19,69 +20,100 @@ export const productService = {
         return MOCK_PRODUCTS;
       }
 
-      // Intentar extraer la lista de varias formas posibles
-      const list: any[] =
-        (Array.isArray(json) ? json : null) ||
-        json.productos ||
-        json.products ||
-        json.data ||
-        json.items ||
-        [];
+      const list: ApiProduct[] = Array.isArray(json)
+        ? json
+        : json.productos ?? [];
 
-      return list.map((p) => {
-        console.log('Mapping product:', p); // Debug log to see raw product data
-        // Construcción correcta de la imagen
-        let img =
-          p.imagen_url ??
-          p.imagen ??
-          p.imageUrl ??
-          p.image ??
-          null;
+      return list.map((p: ApiProduct) => {
+        console.log('Mapping product:', p);
 
-        // Si la imagen existe
+        // -------- IMAGEN --------
+        let img = p.imagen_url || null;
+
         if (img) {
-          // Normalizar slashes (Windows uses backslashes)
           img = img.replace(/\\/g, '/');
-
           if (!img.startsWith('http')) {
-            // Si es ruta relativa, convertirla en absoluta
-            const cleanPath = img.replace(/^\/+/, '');
-            img = `http://localhost:8081/${cleanPath}`;
+            img = `http://localhost:8081/${img.replace(/^\/+/, '')}`;
           }
         } else {
-          // Imagen por defecto si viene null o no existe
           img = `https://placehold.co/300x300/cccccc/333333?text=${encodeURIComponent(
-            (p.nombre || p.name || 'Producto').substring(0, 10)
+            p.nombre.substring(0, 10)
           )}`;
         }
 
-        return {
-          id: p.id_producto ?? p.id ?? Math.random(),
-          name: p.nombre ?? p.name ?? 'Producto',
-          price: p.precio ?? p.price ?? 0,
-          originalPrice: p.precio_original ?? null,
-          descripcion: p.descripcion ?? p.description ?? '',
-          fecha_vencimiento: p.fecha_vencimiento ?? null,
-          stock: p.stock ?? p.cantidad ?? null,
-          imageUrl: img,
-          location: p.nombre_tienda || p.tienda?.nombre || p.store?.name || 'Ubicación Desconocida',
-          distance: '0 km',
-          badge:
-            p.precio === 0
-              ? 'Donación'
-              : p.descuento
-                ? 'Oferta'
-                : undefined,
-          storeId: p.id_tienda ?? p.store_id ?? p.storeId ?? p.IdTienda ?? p.StoreId ?? p.IDTienda ?? p.tienda?.id ?? p.tienda?.id_tienda ?? p.store?.id ?? 0,
-        };
-      });
+        // -------- PRECIOS (regla nueva) --------
+        const rawOriginal = (p as any).precio_original;
+        const rawDiscount = (p as any).precio_descuento;
+        const rawPrecio = (p as any).precio;
 
+        let discountPrice: number;
+        let originalPrice: number;
+
+        if (
+          rawOriginal !== undefined &&
+          rawOriginal !== null &&
+          rawDiscount !== undefined &&
+          rawDiscount !== null
+        ) {
+          // Caso: backend ya trae ambos → respetar
+          originalPrice = Number(rawOriginal);
+          discountPrice = Number(rawDiscount);
+        } else {
+          // Caso general: el cliente solo escribe un price
+          // Ese price es el precio actual (con descuento)
+          const base =
+            rawDiscount ?? rawPrecio ?? rawOriginal ?? 0;
+
+          discountPrice = Number(base);
+          if (!Number.isFinite(discountPrice)) discountPrice = 0;
+
+          // originalPrice = price + 35%
+          originalPrice = Math.round(discountPrice * 1.35);
+        }
+
+        // Seguridad anti-NaN
+        if (!Number.isFinite(originalPrice)) originalPrice = discountPrice;
+
+        // -------- BADGE --------
+        const badgeFromBackend = (p as any).badge;
+        const badge =
+          badgeFromBackend ??
+          (discountPrice === 0
+            ? 'Donación'
+            : originalPrice > discountPrice
+            ? 'Oferta'
+            : undefined);
+
+        // -------- MAPEADO FINAL --------
+        const mapped: Product = {
+          id: p.id_producto,
+          name: p.nombre.trim(),
+          price: discountPrice,
+          originalPrice,
+          descripcion: p.descripcion,
+          fecha_vencimiento: p.fecha_vencimiento,
+          stock: p.stock,
+          imageUrl: img,
+          location: (p as any).nombre_tienda ?? 'Ubicación Desconocida',
+          distance: '0 km',
+          badge,
+          categoryName: (p as any).nombre_categoria,
+          storeName: (p as any).nombre_tienda,
+          storeId: (p as any).id_tienda,
+        };
+
+        return mapped;
+      });
     } catch (error) {
       console.error('Error fetching products, using mock data:', error);
       return MOCK_PRODUCTS;
     }
   },
 };
+
+
+
+
 
 const MOCK_PRODUCTS: Product[] = [
   {
